@@ -1,0 +1,7 @@
+create the virtual environment -->  			python -m venv .venv
+activate the environment --> 					source .venv/Scripts/Activate
+install required packaged --> 					python -m pip install -r requirements.txt
+upgrade setuptools --> 							python -m pip install --upgrade setuptools
+install package to the environment --> 			python -m pip install -e.
+(Run training notebook)
+Run web app -->

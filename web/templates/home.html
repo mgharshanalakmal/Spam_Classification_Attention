@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="static/home.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        .full-screen-div {
+            width: 95%;
+            margin: 0 auto;
+            height: 100vh;
+            display: flex;
+        }
+
+        .box {
+            width: 50%;
+            box-sizing: border-box;
+            padding: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        label {
+            width: 180px;
+            margin-right: 10px;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            flex: 1;
+        }
+
+        textarea {
+            height: 49%; 
+            width: 100%;
+            resize: none;
+        }
+    </style>
+    <title>Document</title>
+</head>
+<body>
+    <div class="full-screen-div">
+        <div class="box">
+            <form method="POST">
+                <h2>Insert Email / Message</h2>
+                <textarea id= "input_text" name="input_text" rows="4" cols="50"></textarea><br>
+                <button type="button" onclick="predict()">Predict</button>
+            </form>
+        </div>
+        <div class="box">
+            <h2>Prediction Attention</h2>
+            <div id="predictionResult" name="predictionResult" style="resize: none;"></div>
+        </div>
+    </div>
+    <script>
+        function predict() {
+            const emailText = $("#input_text").val();
+            $.ajax({
+                url: "/predict",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({email_text: emailText}),
+                success: function(response) {
+                    $('#predictionResult').empty();
+                    let prediction = response.prediction;
+                    let highlightedWords = response.highlighted_words;
+
+                    highlightedWords.forEach(item => {
+                        let wordSpan = $("<span></span>").text(item.word + " ");
+                        if (item.value > 0) {
+                            if (prediction < 0.5) {
+                                let transparency = (1 - (1-item.value)).toFixed(2);
+                                wordSpan.addClass("highlight");
+                                wordSpan.css('background-color', `rgba(0, 255, 0, ${transparency})`);
+                            } else {
+                                let transparency = (1 - (1-item.value)).toFixed(2);
+                                wordSpan.addClass("highlight");
+                                wordSpan.css('background-color', `rgba(255, 0, 0, ${transparency})`);
+                            }
+                            
+                        }
+                        $('#predictionResult').append(wordSpan);
+                    })
+                    $('#predictionResult').append($('<div></div>').text('Prediction Probability: ' + prediction));
+                    if (prediction > 0.5) {
+                        prediction_result = "Spam"
+                    } else {
+                        prediction_result = "Not Spam"
+                    }
+                    $('#predictionResult').append($('<div></div>').text('Prediction: ' + prediction_result));
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
